@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">ДОСТУП ДО СИСТЕМИ</span>
+            <h1>Користувачі</h1>
+            <p class="muted">Реєстрація створює читача. Роль і активність змінює адміністратор.</p>
+        </div>
+    </div>
+    <article class="panel table-panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Логін</th>
+                        <th>Email</th>
+                        <th>Роль і доступ</th>
+                        <th>Створено</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td>
+                                <strong>{{ row.username }}</strong>
+                            </td>
+                            <td>{{ row.email }}</td>
+                            <td>
+                                <form class="inline-form"
+                                      method="post"
+                                      action="/users/{{ row.user_id }}">
+                                    <input type="hidden" name="csrf" value="{{ csrf }}">
+                                    <select name="role" aria-label="Роль {{ row.username }}">
+                                        {% for role in ['reader','manager','admin'] %}
+                                            <option {{ 'selected' if row.role == role }}>{{ role }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <label class="checkbox">
+                                        <input type="checkbox"
+                                               name="is_active"
+                                               {{ 'checked' if row.is_active }}>Активний
+                                    </label>
+                                    <button class="button">Зберегти</button>
+                                </form>
+                            </td>
+                            <td>{{ row.created_at|stamp }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+{% endblock %}

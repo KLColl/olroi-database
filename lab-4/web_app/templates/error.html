@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel error-panel">
+        <span class="eyebrow">ОПЕРАЦІЮ НЕ ВИКОНАНО</span>
+        <h1>{{ title }}</h1>
+        <p>{{ message }}</p>
+        <div class="actions">
+            <button class="button" type="button" onclick="history.back()">← Повернутися</button>
+            <a class="button primary" href="/">На головну</a>
+        </div>
+    </section>
+{% endblock %}

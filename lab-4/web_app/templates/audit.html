@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">КОНТРОЛЬ ЗМІН</span>
+            <h1>
+                Журнал операцій <span class="count">{{ data.total }}</span>
+            </h1>
+            <p class="muted">Зміни даних, перегляди, входи, експорт і резервні копії.</p>
+        </div>
+    </div>
+    <form class="filter-bar panel" method="get">
+        <label>
+            Користувач або таблиця<input name="q"
+                                         value="{{ request.query_params.get('q', '') }}"
+                                         placeholder="Наприклад, books">
+        </label>
+        <label>
+            Операція<select name="action">
+            <option value="">Усі операції</option>
+            {% for action in ['INSERT','UPDATE','DELETE','READ','LOGIN','LOGOUT','REGISTER','EXPORT','BACKUP'] %}
+                <option {{ 'selected' if request.query_params.get("action") == action }}>{{ action }}</option>
+            {% endfor %}
+            </select>
+        </label>
+        <button class="button primary">Знайти</button>
+        <a class="text-button" href="/audit">Скинути</a>
+    </form>
+    <article class="panel table-panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Час</th>
+                        <th>Користувач</th>
+                        <th>Операція</th>
+                        <th>Об’єкт</th>
+                        <th>Деталі</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data.rows %}
+                        <tr>
+                            <td>{{ row.log_id }}</td>
+                            <td class="nowrap">{{ row.created_at|stamp }}</td>
+                            <td>{{ row.username }}</td>
+                            <td>
+                                <span class="badge neutral">{{ row.action }}</span>
+                            </td>
+                            <td>{{ row.table_name }}</td>
+                            <td>
+                                <details>
+                                    <summary>Переглянути</summary>
+                                    <pre>{{ row.record_key|tojson(indent=2) }}</pre>
+                                    {% if row.old_data %}
+                                        <strong>До</strong>
+                                        <pre>{{ row.old_data|tojson(indent=2) }}</pre>
+                                    {% endif %}
+                                    {% if row.new_data %}
+                                        <strong>Після</strong>
+                                        <pre>{{ row.new_data|tojson(indent=2) }}</pre>
+                                    {% endif %}
+                                </details>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <footer class="table-footer">
+            <span>Сторінка {{ data.page }} з {{ data.pages }}</span>
+            <div class="actions">
+                {% if data.page > 1 %}
+                    <a class="button"
+                       href="{{ request.url.include_query_params(page=data.page-1) }}">← Назад</a>
+                {% endif %}
+                {% if data.page < data.pages %}
+                    <a class="button"
+                       href="{{ request.url.include_query_params(page=data.page+1) }}">Далі →</a>
+                {% endif %}
+            </div>
+        </footer>
+    </article>
+{% endblock %}

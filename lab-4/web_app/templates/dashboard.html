@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">УСЕ ПІД КОНТРОЛЕМ</span>
+            <h1>Огляд книгарні</h1>
+            <p class="muted">Ключові показники каталогу та підтверджених продажів.</p>
+        </div>
+        <a class="button" href="/catalog/books">Відкрити каталог ↗</a>
+    </div>
+    <section class="metrics">
+        <article>
+            <span>Продажі</span>
+            <strong>{{ stats.totals.revenue|money }} <small>грн</small>
+            </strong>
+            <p>Лише підтверджені замовлення</p>
+        </article>
+        <article>
+            <span>Підтверджено</span>
+            <strong>{{ stats.totals.sales }} <small>замовлень</small>
+            </strong>
+            <p>{{ stats.totals.drafts }} чернеток очікують дії</p>
+        </article>
+        <article>
+            <span>Книги в каталозі</span>
+            <strong>{{ stats.totals.titles }} <small>назв</small>
+            </strong>
+            <p>Усі автори та категорії</p>
+        </article>
+        <article>
+            <span>На складі</span>
+            <strong>{{ stats.totals.stock }} <small>примірників</small>
+            </strong>
+            <p>Доступний залишок</p>
+        </article>
+    </section>
+    <section class="chart-grid">
+        <article class="panel">
+            <div class="panel-title">
+                <h2>Динаміка продажів</h2>
+                <span class="badge neutral">14 днів</span>
+            </div>
+            <p class="muted small">За датою підтвердження замовлення, грн</p>
+            <canvas id="daily-chart"
+                    height="290"
+                    role="img"
+                    aria-label="Щоденні продажі за 14 днів">
+            </canvas>
+            <details>
+                <summary>Дані графіка</summary>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Продажі, грн</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in stats.daily %}
+                            <tr>
+                                <td>{{ row.day }}</td>
+                                <td>{{ row.revenue|money }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </details>
+        </article>
+        <article class="panel">
+            <div class="panel-title">
+                <h2>Продажі за категоріями</h2>
+                <span class="badge neutral">Увесь час</span>
+            </div>
+            <canvas id="category-chart"
+                    height="350"
+                    role="img"
+                    aria-label="Продажі за категоріями">
+            </canvas>
+            <details>
+                <summary>Дані графіка</summary>
+                <table>
+                    <tbody>
+                        {% for row in stats.categories %}
+                            <tr>
+                                <td>{{ row.category_name }}</td>
+                                <td>{{ row.revenue|money }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </details>
+        </article>
+    </section>
+    <article class="panel">
+        <div class="panel-title">
+            <h2>Покупці за сумою замовлень</h2>
+            <a href="/catalog/customers">Усі покупці →</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Покупець</th>
+                        <th>Підтверджено замовлень</th>
+                        <th class="number">Сума, грн</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in stats.customers %}
+                        <tr>
+                            <td>{{ row.full_name }}</td>
+                            <td>{{ row.orders }}</td>
+                            <td class="number">{{ row.spent|money }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+    <script id="chart-data" type="application/json">{{ chart_data|tojson }}</script>
+{% endblock %}

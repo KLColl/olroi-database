@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="auth-layout">
+        <section class="auth-story">
+            <a class="brand" href="/login">
+                <span class="brand-icon">К</span>Книгарня</a>
+            <div>
+                <span class="eyebrow">КНИГИ. ЛЮДИ. ІСТОРІЇ.</span>
+                <h1>
+                    Кожна книга
+                    <br>
+                    на своєму місці.
+                </h1>
+                <p>
+                    Каталог, покупці та замовлення -
+                    <br>
+                    в одному спокійному робочому просторі.
+                </p>
+                <div class="book-illustration" aria-hidden="true">
+                    <span>ПОЕЗІЯ</span>
+                    <span>ПРОЗА</span>
+                    <span>ІСТОРІЇ</span>
+                    <span>МИСТЕЦТВО</span>
+                </div>
+            </div>
+            <small>Інформаційна система книжкового магазину</small>
+        </section>
+        <section class="auth-card">
+            <span class="eyebrow">ОСОБИСТИЙ КАБІНЕТ</span>
+            <h2>{{ title }}</h2>
+            <p class="muted">{{ 'Авторизація для продовження роботи.' if mode == 'login' else 'Новий обліковий запис отримує доступ читача.' }}</p>
+            {% if error %}
+                <div class="alert error" role="alert">{{ error }}</div>
+            {% endif %}
+            <form method="post" action="/{{ mode }}">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <label>
+                    Логін<input name="username"
+                                required
+                                minlength="3"
+                                maxlength="40"
+                                pattern="[a-z0-9_.\-]{3,40}"
+                                autocomplete="username"
+                                placeholder="Логін">
+                </label>
+                {% if mode == "register" %}
+                    <label>
+                        Електронна адреса<input type="email"
+                                                name="email"
+                                                required
+                                                maxlength="254"
+                                                autocomplete="email"
+                                                placeholder="name@example.com">
+                    </label>
+                {% endif %}
+                <label>
+                    Пароль<input type="password"
+                                 name="password"
+                                 required
+                                 maxlength="128"
+                                 {{ 'minlength=8 data-password-policy' if mode == 'register' else '' }}
+                                 autocomplete="{{ 'current-password' if mode == 'login' else 'new-password' }}"
+                                 placeholder="Пароль">
+                </label>
+                <button class="button primary wide">{{ 'Увійти →' if mode == 'login' else 'Створити обліковий запис →' }}</button>
+            </form>
+            <p class="auth-switch">
+                {{ 'Ще немає облікового запису?' if mode == 'login' else 'Уже є обліковий запис?' }} <a href="/{{ 'register' if mode == 'login' else 'login' }}">{{ 'Зареєструватися' if mode == 'login' else 'Увійти' }}</a>
+            </p>
+        </section>
+    </div>
+{% endblock %}

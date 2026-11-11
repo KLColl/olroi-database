@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-heading">
+        <div>
+            <a class="breadcrumb" href="/catalog/{{ entity }}">← {{ conf.label }}</a>
+            <h1>{{ title }}</h1>
+            <p class="muted">Поля зі зірочкою обов’язкові.</p>
+        </div>
+    </div>
+    <form class="panel edit-form"
+          method="post"
+          action="/catalog/{{ entity }}/save">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <input type="hidden" name="item_id" value="{{ item_id or '' }}">
+        <div class="form-grid">
+            {% for name,label,kind,required in conf.fields %}
+                <label>
+                    {{ label }} {{ '*' if required else '' }}
+                    {% if kind in ["author","category"] %}
+                        <select name="{{ name }}" required>
+                            <option value="">Вибір значення</option>
+                            {% for item in refs['authors' if kind == 'author' else 'categories'] %}
+                                <option value="{{ item.id }}"
+                                        {{ 'selected' if values.get(name)|string == item.id|string }}>{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <input name="{{ name }}"
+                               value="{{ values.get(name, '') if values.get(name) is not none else '' }}"
+                               {{ 'required' if required else '' }}
+                               type="{{ 'number' if kind in ['money','year','stock'] else 'email' if kind == 'email' else 'tel' if kind == 'phone' else 'text' }}"
+                               {% if kind == 'money' %}min="0" max="99999999.99" step="0.01"{% elif kind == 'year' %}min="1450" max="2100" step="1"{% elif kind == 'stock' %}min="0" max="1000000" step="1"{% elif kind == 'isbn' %}pattern="[0-9]{13}" maxlength="13" data-isbn{% else %}maxlength="{{ 20 if kind == 'phone' else 500 }}"{% endif %}>
+                    {% endif %}
+                </label>
+            {% endfor %}
+        </div>
+        <div class="form-footer">
+            <a class="button" href="/catalog/{{ entity }}">Скасувати</a>
+            <button class="button primary">Зберегти зміни</button>
+        </div>
+    </form>
+{% endblock %}

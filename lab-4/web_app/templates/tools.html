@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">ДАНІ ЗА МЕЖАМИ ІНТЕРФЕЙСУ</span>
+            <h1>Звіти та інтеграція</h1>
+            <p class="muted">Експорт, API-доступ і резервне копіювання.</p>
+        </div>
+    </div>
+    <div class="tool-grid">
+        {% if user.role != "reader" %}
+            <article class="panel">
+                <span class="tool-icon">↓</span>
+                <h2>Excel-звіти</h2>
+                <p class="muted">Таблиці з форматуванням, фільтрами та актуальними даними.</p>
+                <div class="stack">
+                    <a class="button" href="/reports/books.xlsx">Каталог книг ↓</a>
+                    <a class="button" href="/reports/orders.xlsx">Замовлення ↓</a>
+                    <a class="button" href="/reports/statistics.xlsx">Продажі за категоріями ↓</a>
+                </div>
+            </article>
+        {% endif %}
+        <article class="panel">
+            <span class="tool-icon">⌘</span>
+            <h2>API-доступ</h2>
+            <p class="muted">Права токена відповідають ролі користувача. Створення нового токена скасовує попередній.</p>
+            <a href="/docs" target="_blank" rel="noopener">Відкрити Swagger UI ↗</a>
+            <form method="post" action="/tools/token">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <button class="button primary">Створити токен</button>
+            </form>
+            {% if token %}
+                <label>
+                    Новий токен<input type="password"
+                                      id="api-token"
+                                      value="{{ token }}"
+                                      readonly
+                                      autocomplete="off">
+                </label>
+                <button class="text-button" type="button" data-copy-token>Скопіювати токен</button>
+                <p class="muted small">Повторний перегляд токена після закриття сторінки недоступний.</p>
+            {% endif %}
+        </article>
+        {% if user.role == "admin" %}
+            <article class="panel">
+                <span class="tool-icon">▣</span>
+                <h2>Резервна копія</h2>
+                <p class="muted">Повний архів PostgreSQL у форматі custom: структура, дані та журнал операцій.</p>
+                <form method="post" action="/tools/backup">
+                    <input type="hidden" name="csrf" value="{{ csrf }}">
+                    <button class="button primary">Створити та завантажити</button>
+                </form>
+                <p class="muted small">Копія також зберігається локально в папці backups.</p>
+            </article>
+        {% endif %}
+    </div>
+{% endblock %}

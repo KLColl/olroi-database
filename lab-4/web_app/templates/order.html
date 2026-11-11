@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-heading">
+        <div>
+            <a class="breadcrumb" href="/orders">← Замовлення</a>
+            <h1>
+                {{ title }} <span class="badge {{ 'good' if order.status == 'Confirmed' else 'neutral' }}">{{ order.status|status_ua }}</span>
+            </h1>
+            <p class="muted">{{ order.customer_name }} · {{ order.customer_email }} · {{ order.created_at|stamp }}</p>
+        </div>
+        <strong class="order-total">{{ order.order_total|money }} <small>грн</small>
+        </strong>
+    </div>
+    <article class="panel table-panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Книга</th>
+                        <th>Кількість</th>
+                        <th class="number">Ціна продажу, грн</th>
+                        <th class="number">Сума, грн</th>
+                        {% if order.status == "Draft" and user.role != "reader" %}
+                            <th></th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>{{ item.title }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td class="number">{{ item.unit_price|money }}</td>
+                            <td class="number">{{ item.line_total|money }}</td>
+                            {% if order.status == "Draft" and user.role != "reader" %}
+                                <td>
+                                    <form method="post"
+                                          action="/orders/{{ order.order_id }}/remove_item">
+                                        <input type="hidden" name="csrf" value="{{ csrf }}">
+                                        <input type="hidden"
+                                               name="book_id"
+                                               value="{{ item.book_id }}">
+                                        <button class="text-button danger">Прибрати</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="empty">Замовлення поки не містить книг.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+    {% if user.role != "reader" %}
+        {% if order.status == "Draft" %}
+            <div class="chart-grid">
+                <article class="panel">
+                    <h2>Додати або змінити позицію</h2>
+                    <p class="muted small">Для наявної позиції кількість буде замінено, ціна продажу збережеться.</p>
+                    <form method="post" action="/orders/{{ order.order_id }}/item">
+                        <input type="hidden" name="csrf" value="{{ csrf }}">
+                        <label>
+                            Книга<select name="book_id" required>
+                            {% for b in books %}
+                                <option value="{{ b.book_id }}">{{ b.title }} · {{ b.price|money }} грн · залишок {{ b.stock_quantity }}</option>
+                            {% endfor %}
+                            </select>
+                        </label>
+                        <label>
+                            Кількість<input name="quantity"
+                                            type="number"
+                                            min="1"
+                                            max="1000000"
+                                            value="1"
+                                            required>
+                        </label>
+                        <button class="button">Зберегти позицію</button>
+                    </form>
+                </article>
+                <article class="panel">
+                    <h2>Покупець</h2>
+                    <form method="post" action="/orders/{{ order.order_id }}/customer">
+                        <input type="hidden" name="csrf" value="{{ csrf }}">
+                        <label>
+                            Обліковий запис покупця<select name="customer_id">
+                            {% for c in refs.customers %}
+                                <option value="{{ c.id }}"
+                                        {{ 'selected' if c.id == order.customer_id }}>{{ c.name }}</option>
+                            {% endfor %}
+                            </select>
+                        </label>
+                        <button class="button">Змінити покупця</button>
+                    </form>
+                </article>
+            </div>
+        {% endif %}
+        <div class="actions order-actions">
+            {% if order.status == "Draft" %}
+                <form method="post"
+                      action="/orders/{{ order.order_id }}/confirm"
+                      data-confirm="Підтвердити замовлення та списати товар зі складу?">
+                    <input type="hidden" name="csrf" value="{{ csrf }}">
+                    <button class="button primary"
+                            {{ 'disabled' if not items }}>Підтвердити замовлення</button>
+                </form>
+            {% endif %}
+            {% if order.status != "Cancelled" %}
+                <form method="post"
+                      action="/orders/{{ order.order_id }}/cancel"
+                      data-confirm="Скасувати замовлення? Для підтвердженого замовлення товар повернеться на склад.">
+                    <input type="hidden" name="csrf" value="{{ csrf }}">
+                    <button class="button">Скасувати замовлення</button>
+                </form>
+            {% endif %}
+            {% if order.status == "Draft" and user.role == "admin" %}
+                <form method="post"
+                      action="/orders/{{ order.order_id }}/delete"
+                      data-confirm="Видалити чернетку з усіма позиціями?">
+                    <input type="hidden" name="csrf" value="{{ csrf }}">
+                    <button class="button danger">Видалити чернетку</button>
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

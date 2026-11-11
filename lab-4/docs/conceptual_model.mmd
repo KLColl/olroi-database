@@ -1,0 +1,70 @@
+erDiagram
+    AUTHORS ||--o{ BOOKS : writes
+    CATEGORIES ||--o{ BOOKS : classifies
+    CUSTOMERS ||--o{ ORDERS : places
+    ORDERS ||--o{ ORDER_ITEMS : contains
+    BOOKS ||--o{ ORDER_ITEMS : appears_in
+    APP_USERS o|--o{ ACTIVITY_LOG : performs
+    AUTHORS {
+        bigint author_id PK
+        text first_name
+        text last_name
+        text country
+    }
+    CATEGORIES {
+        bigint category_id PK
+        text category_name UK
+        text description
+    }
+    BOOKS {
+        bigint book_id PK
+        varchar isbn UK
+        text title
+        bigint author_id FK
+        bigint category_id FK
+        integer publication_year
+        numeric price
+        integer stock_quantity
+        timestamptz updated_at
+    }
+    CUSTOMERS {
+        bigint customer_id PK
+        text full_name
+        text email UK
+        varchar phone
+        timestamptz created_at
+    }
+    ORDERS {
+        bigint order_id PK
+        bigint customer_id FK
+        text status
+        timestamptz created_at
+        timestamptz confirmed_at
+    }
+    ORDER_ITEMS {
+        bigint order_id PK,FK
+        bigint book_id PK,FK
+        integer quantity
+        numeric unit_price
+    }
+    APP_USERS {
+        bigint user_id PK
+        varchar username UK
+        text email UK
+        text password_hash
+        text role
+        boolean is_active
+        text api_token_hash UK
+        timestamptz created_at
+    }
+    ACTIVITY_LOG {
+        bigint log_id PK
+        bigint user_id FK
+        text username
+        text action
+        text table_name
+        jsonb record_key
+        jsonb old_data
+        jsonb new_data
+        timestamptz created_at
+    }

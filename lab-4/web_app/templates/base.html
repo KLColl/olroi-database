@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="uk">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf }}">
+        <title>{{ title }} · Книгарня</title>
+        <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+        <script src="{{ url_for('static', path='app.js') }}" defer></script>
+    </head>
+    <body class="{{ 'signed-in' if user else 'signed-out' }}">
+        {% if user %}
+            <aside class="sidebar">
+                <a class="brand" href="/">
+                    <span class="brand-icon">К</span>
+                    <span>Книгарня<small>ПРОСТІР ОБЛІКУ</small>
+                    </span>
+                </a>
+                <span class="nav-label">РОБОЧИЙ ПРОСТІР</span>
+                <nav aria-label="Основна навігація">
+                    <a class="{{ 'active' if current_path == '/' }}" href="/">◈ <span>Огляд</span>
+                    </a>
+                    {% for entity, conf in entities.items() %}
+                        <a class="{{ 'active' if current_path.startswith('/catalog/' ~ entity) }}"
+                           href="/catalog/{{ entity }}">{{ {'books':'▤','authors':'✎','categories':'▦','customers':'◉'}[entity] }} <span>{{ conf.label }}</span>
+                        </a>
+                    {% endfor %}
+                    <a class="{{ 'active' if current_path.startswith('/orders') }}"
+                       href="/orders">▣ <span>Замовлення</span>
+                    </a>
+                    <a class="{{ 'active' if current_path == '/tools' }}"
+                       href="/tools">↗ <span>Звіти та інтеграція</span>
+                    </a>
+                    {% if user.role == "admin" %}
+                        <span class="nav-label">АДМІНІСТРУВАННЯ</span>
+                        <a class="{{ 'active' if current_path == '/audit' }}"
+                           href="/audit">≡ <span>Журнал операцій</span>
+                        </a>
+                        <a class="{{ 'active' if current_path == '/users' }}"
+                           href="/users">◎ <span>Користувачі</span>
+                        </a>
+                    {% endif %}
+                </nav>
+                <div class="sidebar-foot">
+                    <span class="dot"></span> Книжковий магазин
+                </div>
+            </aside>
+        {% endif %}
+        <div class="app-body">
+            {% if user %}
+                <header class="topbar">
+                    <span>КНИЖКОВИЙ МАГАЗИН <span class="muted">/ робочий кабінет</span>
+                    </span>
+                    <div class="account">
+                        <span class="avatar">{{ user.username[0]|upper }}</span>
+                        <span>{{ user.username }}<small>{{ {'admin':'Адміністратор','manager':'Менеджер','reader':'Читач'}[user.role] }}</small>
+                        </span>
+                        <form method="post" action="/logout">
+                            <input type="hidden" name="csrf" value="{{ csrf }}">
+                            <button class="text-button">Вийти ↗</button>
+                        </form>
+                    </div>
+                </header>
+            {% endif %}
+            <main>
+                {% if notice %}
+                    <div class="alert success" role="status">{{ notice }}</div>
+                {% endif %}
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </body>
+</html>

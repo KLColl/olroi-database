@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="page-heading">
+        <div>
+            <span class="eyebrow">ПРОДАЖІ</span>
+            <h1>Замовлення</h1>
+            <p class="muted">Чернетки не резервують товар. Залишки списуються при підтвердженні.</p>
+        </div>
+        {% if user.role != "reader" %}
+            <a class="button" href="/reports/orders.xlsx">↓ Excel</a>
+        {% endif %}
+    </div>
+    <div class="order-toolbar">
+        <form method="get" class="inline-form">
+            <label>
+                Статус<select name="status">
+                <option value="">Усі статуси</option>
+                {% for s in ['Draft','Confirmed','Cancelled'] %}
+                    <option value="{{ s }}"
+                            {{ 'selected' if selected_status == s }}>{{ s|status_ua }}</option>
+                {% endfor %}
+                </select>
+            </label>
+            <button class="button">Застосувати</button>
+        </form>
+        {% if user.role != "reader" %}
+            <form method="post" action="/orders/new" class="inline-form">
+                <input type="hidden" name="csrf" value="{{ csrf }}">
+                <label>
+                    Нове замовлення для<select name="customer_id" required>
+                    {% for c in refs.customers %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                    </select>
+                </label>
+                <button class="button primary">＋ Створити</button>
+            </form>
+        {% endif %}
+    </div>
+    <article class="panel table-panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Замовлення</th>
+                        <th>Покупець</th>
+                        <th>Створено</th>
+                        <th>Статус</th>
+                        <th>Примірників</th>
+                        <th class="number">Сума, грн</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td>
+                                <a href="/orders/{{ row.order_id }}">№{{ row.order_id }}</a>
+                            </td>
+                            <td>{{ row.customer_name }}</td>
+                            <td>{{ row.created_at|stamp }}</td>
+                            <td>
+                                <span class="badge {{ 'good' if row.status == 'Confirmed' else 'neutral' if row.status == 'Draft' else 'warning' }}">{{ row.status|status_ua }}</span>
+                            </td>
+                            <td>{{ row.total_quantity }}</td>
+                            <td class="number">{{ row.order_total|money }}</td>
+                            <td>
+                                <a href="/orders/{{ row.order_id }}">Відкрити →</a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="empty">Замовлень немає.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+{% endblock %}
