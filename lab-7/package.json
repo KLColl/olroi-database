@@ -1,0 +1,13 @@
+{
+  "name": "blog-lab7",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "mongodb": "^7.0.0",
+    "pg": "^8.23.1"
+  }
+}
